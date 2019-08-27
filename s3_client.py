@@ -4,7 +4,7 @@ from tkinter.filedialog import askdirectory
 from os import listdir, remove, execl
 from shutil import rmtree, make_archive
 from getpass import getuser, getpass
-from os.path import isdir, basename
+from os.path import isdir, basename, join
 from time import sleep
 from sys import executable, argv
 try:
@@ -190,6 +190,7 @@ class S3Zilla:
             width=30,
             text="S3 File System"
         )
+        ### 鼠标点击的项目列表
         self.ex_loc = Listbox(
             master,
             fg=self.colors['cyan'],
@@ -197,7 +198,8 @@ class S3Zilla:
             width=49,
             height=18,
             highlightcolor=self.colors['black'],
-            selectmode="multiple"
+            selectmode="multiple",
+            exportselection=0
         )
         self.ex_s3 = Listbox(
             master,
@@ -206,7 +208,8 @@ class S3Zilla:
             width=49,
             height=18,
             highlightcolor=self.colors['black'],
-            selectmode="multiple"
+            selectmode="multiple",
+            exportselection=0
         )
         self.upload_button = Button(
             master,
@@ -596,10 +599,14 @@ class S3Zilla:
             m = "Ensure files are selected to upload"
             self.set_status_label(m)
         else:
+            s3_sel_path = self.get_s3_sel()[0]
+            # if not isdir(s3_sel_path):
+            #     m = "Ensure target path is a directory"
+            #     self.set_status_label(m)
             for selection in self.get_local_sel():
                 file_ = "%s/%s" % (self.dir, selection)
                 if not isdir(file_):
-                    self.s3c.upload_file(file_, self.drp_sel, basename(file_))
+                    self.s3c.upload_file(file_, self.drp_sel, join(s3_sel_path, basename(file_)))
                 else:
                     zipd = make_archive(file_, 'zip', self.dir, selection)
                     self.s3c.upload_file(zipd, self.drp_sel, basename(zipd))
