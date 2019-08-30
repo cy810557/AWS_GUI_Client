@@ -1,4 +1,5 @@
 ## ref: https://stackoverflow.com/questions/16746387/tkinter-treeview-widget
+## Style ref: https://stackoverflow.com/questions/42708050/tkinter-treeview-heading-styling
 import os
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -32,6 +33,15 @@ class App(tk.Frame):
                 self.process_directory(oid, abspath)
 
     def parent_path(self, item, path=''):
+        '''
+        Get parent path recursivly.
+        Key ref: https://stackoverflow.com/questions/43681006/python-tkinter-treeview-get-return-parent-name-of-selected-item
+
+        :param item: base item
+        :param path: not required when first pass
+        :return: parent path of the current item
+        '''
+
         parent_iid = self.tree.parent(item)
         if parent_iid == '':
             return path

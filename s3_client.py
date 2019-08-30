@@ -1,12 +1,15 @@
 #! /usr/bin/python3
 from tkinter import *
 from tkinter.filedialog import askdirectory
+from tkinter.ttk import Treeview, Scrollbar
 from os import listdir, remove, execl
 from shutil import rmtree, make_archive
 from getpass import getuser, getpass
-from os.path import isdir, basename, join
+from os.path import isdir, basename, join, abspath
 from time import sleep
+import os
 from sys import executable, argv
+from s3_utils.simple_tree import DirTree, is_s3_dir
 try:
     import boto3
     from botocore.exceptions import ClientError
@@ -17,6 +20,7 @@ except ImportError as e:
 
 class S3Zilla:
     def __init__(self, master):
+        #Frame.__init__(self, master)
         # self.service_name = 's3'
         # self.use_ssl = False
         # self.endpoint_url = 'http://10.5.41.189:9090'
@@ -191,26 +195,29 @@ class S3Zilla:
             text="S3 File System"
         )
         ### 鼠标点击的项目列表
-        self.ex_loc = Listbox(
-            master,
-            fg=self.colors['cyan'],
-            bg=self.colors['black'],
-            width=49,
-            height=18,
-            highlightcolor=self.colors['black'],
-            selectmode="multiple",
-            exportselection=0
-        )
-        self.ex_s3 = Listbox(
-            master,
-            fg=self.colors['cyan'],
-            bg=self.colors['black'],
-            width=49,
-            height=18,
-            highlightcolor=self.colors['black'],
-            selectmode="multiple",
-            exportselection=0
-        )
+        # self.ex_loc = Listbox(
+        #     master,
+        #     fg=self.colors['cyan'],
+        #     bg=self.colors['black'],
+        #     width=49,
+        #     height=18,
+        #     highlightcolor=self.colors['black'],
+        #     selectmode="multiple",
+        #     exportselection=0
+        # )
+
+
+        # self.ex_s3 = Listbox(     # use TreeView instead
+        #     master,
+        #     fg=self.colors['cyan'],
+        #     bg=self.colors['black'],
+        #     width=49,
+        #     height=18,
+        #     highlightcolor=self.colors['black'],
+        #     selectmode="multiple",
+        #     exportselection=0
+        # )
+
         self.upload_button = Button(
             master,
             fg=self.colors['light-grey'],
@@ -383,16 +390,16 @@ class S3Zilla:
             sticky=E,
             padx=20
         )
-        self.ex_loc.grid(
-            row=4,
-            sticky=W,
-            padx=20
-        )
-        self.ex_s3.grid(
-            row=4,
-            sticky=E,
-            padx=20
-        )
+        # self.ex_loc_tree.grid(
+        #     row=4,
+        #     sticky=W,
+        #     padx=20
+        # )
+        # self.ex_s3.grid(
+        #     row=4,
+        #     sticky=E,
+        #     padx=20
+        # )
         self.upload_button.grid(
             row=5,
             sticky=W,
@@ -472,16 +479,19 @@ class S3Zilla:
             padx=20,
             pady=0
         )
-        n1 = "%s files found" % str(self.ex_loc.size())
-        self.set_found_local_label(n1)
-        n2 = "%s files found" % str(self.ex_s3.size())
-        self.set_found_s3_label(n2)
+        # n1 = "%s files found" % str(self.ex_loc_tree.size())
+        # self.set_found_local_label(n1)
+        # n2 = "%s files found" % str(self.ex_s3.size())
+        # self.set_found_s3_label(n2)
 
     def quit(self):
         exit()
 
     def get_local_sel(self):
-        return [self.ex_loc.get(i) for i in self.ex_loc.curselection()]
+        items = self.ex_loc_tree.selection()
+        parents = [self.parent_path(item) for item in items]
+        item_text = [self.ex_loc_tree.item(i)['text'] for i in items]
+        return [join(p, i) for p, i in zip(parents, item_text)]
 
     def get_s3_sel(self):
         return [self.ex_s3.get(i) for i in self.ex_s3.curselection()]
@@ -540,8 +550,9 @@ class S3Zilla:
 
     def load_dir(self):
         self.dir = askdirectory()
+        self.init_local_tree()
         self.set_local_browse_label(self.dir)
-        self.refresh_local()
+        #self.refresh_local()
 
     def refresh_local(self):
         if not self.dir:
@@ -549,17 +560,17 @@ class S3Zilla:
             self.set_status_label(m)
         else:
             self.set_local_browse_label(self.dir)
-            self.ex_loc.delete(0, 'end')
+            #self.ex_loc_tree.delete(0, 'end')
             x = self.dir + "/"
             d = [f if not isdir(x+f) else f + '/' for f in sorted(listdir(x))]
-            self.ex_loc.insert('end', *d)
+            self.ex_loc_tree.insert('end', *d)
             if not self.deleted:
                 m = "Hello %s" % getuser()
             else:
                 m = "FINISHED DELETING"
                 self.deleted = False
             self.set_status_label(m)
-            n = "%s files found" % str(self.ex_loc.size())
+            n = "%s files found" % str(self.ex_loc_tree.size())
             self.set_found_local_label(n)
 
     def refresh_s3(self):
@@ -570,11 +581,14 @@ class S3Zilla:
             m = "Please select a bucket from the drop-down list"
             self.set_status_label(m)
         else:
-            self.ex_s3.delete(0, 'end')
-            self.ex_s3.insert('end', *self.get_bucket_contents())
+            self.init_s3_tree()
+
+            #self.ex_s3_tree.delete(0, 'end')
+            #self.s3_file_list = self.get_bucket_contents()
+            #self.ex_s3.insert('end', *self.get_bucket_contents())
             self.set_status_label("Hello %s" % getuser())
             self.set_s3_bucket_label(self.drp_sel)
-            n = "%s files found" % str(self.ex_s3.size())
+            n = "%s files found" % str(self.ex_s3_tree.size())
             self.set_found_s3_label(n)
             self.found_label_s3.update_idletasks()
             if not self.deleted:
@@ -604,13 +618,15 @@ class S3Zilla:
             #     m = "Ensure target path is a directory"
             #     self.set_status_label(m)
             for selection in self.get_local_sel():
-                file_ = "%s/%s" % (self.dir, selection)
+                file_ = os.path.split(os.path.abspath(self.dir))[0]
+                file_ = join(file_, selection)
                 if not isdir(file_):
                     self.s3c.upload_file(file_, self.drp_sel, join(s3_sel_path, basename(file_)))
                 else:
-                    zipd = make_archive(file_, 'zip', self.dir, selection)
-                    self.s3c.upload_file(zipd, self.drp_sel, basename(zipd))
-                    remove(zipd)
+                    # zipd = make_archive(file_, 'zip', self.dir, selection)
+                    # self.s3c.upload_file(zipd, self.drp_sel, basename(zipd))
+                    # remove(zipd)
+                    self.upload_folder(file_, s3_sel_path)
                 m = "Uploaded: %s" % selection
                 self.set_status_label(m)
                 self.status_label.update_idletasks()
@@ -685,8 +701,133 @@ class S3Zilla:
             self.set_status_label(m)
         else:
             bucket = self.s3.Bucket(self.drp_sel)
-            bucket.put_object(Bucket=bucket.name, Key=new_path)
+            bucket.put_object(Bucket=bucket.name, Key=join(new_path, '.dir_maker'))
+
             self.refresh_s3()
+
+    def treeviewClick(self, event, treeView=None):
+        for item in self.ex_loc_tree.selection():
+            item_path = self.ex_loc_tree.item(item)['text']
+            parent_path = self.parent_path(item)  # 输出所选行的第一列的值
+            print(join(parent_path, item_path))
+
+    def init_local_tree(self):
+        self.ex_loc_tree = Treeview(self.master)
+        ysb = Scrollbar(self.master, orient='vertical', command=self.ex_loc_tree.yview)
+        xsb = Scrollbar(self.master, orient='horizontal', command=self.ex_loc_tree.xview)
+        self.ex_loc_tree.configure(yscroll=ysb.set, xscroll=xsb.set)
+        # self.ex_loc_tree.grid(
+        #     row=100,
+        #     sticky=W,
+        #     padx=20
+        # )
+        n1 = "%s files found" % str(self.ex_loc_tree.size())
+        self.set_found_local_label(n1)
+        self.ex_loc_tree.bind("<ButtonRelease-1>", self.treeviewClick)
+        folder_name = basename(self.dir)
+        self.ex_loc_tree.heading('#0', text=basename(folder_name), anchor='w')
+
+        abs_path = abspath(self.dir)
+        root_node = self.ex_loc_tree.insert('', 'end', text=folder_name, open=True)
+        self.process_loc_dir(root_node, abs_path)
+
+        self.ex_loc_tree.grid(row=0, column=0)
+        # Set Scrollbar
+        # ysb.grid(row=0, column=1, sticky='ns')
+        # xsb.grid(row=1, column=0, sticky='ew')
+        self.master.grid()
+
+    def init_s3_tree(self):
+        self.ex_s3_tree = Treeview(self.master)
+        self.ex_s3_tree.column('#0', minwidth=500, stretch=0)
+        self.ex_s3_tree.heading('#0', text=self.drp_sel, anchor='w')
+
+        ysb = Scrollbar(self.master, orient='vertical', command=self.ex_s3_tree.yview)
+        xsb = Scrollbar(self.master, orient='horizontal', command=self.ex_s3_tree.xview)
+        self.ex_s3_tree.configure(yscroll=ysb.set, xscroll=xsb.set)
+
+        n1 = "%s files found" % str(self.ex_s3_tree.size())
+        self.ex_s3_tree.grid(
+            row=4,
+            sticky=E,
+            padx=100
+        )
+        self.set_found_s3_label(n1)
+        #self.ex_s3_tree.bind("<ButtonRelease-1>", self.treeviewClick)
+
+        self.build_s3_tree()
+
+        self.ex_s3_tree.grid(row=0, column=0)
+        ysb.grid(row=0, column=1, sticky='ns')
+        xsb.grid(row=1, column=0, sticky='ew')
+
+        self.master.grid()
+
+    def process_loc_dir(self, parent, path):
+        '''
+        :param parent: parent node(TreeView object), used to insert treeview node
+        :param path: string object, used to get children strings.
+        '''
+        for p in listdir(path):
+            abspath = join(path, p)
+            is_dir = os.path.isdir(abspath)
+            oid = self.ex_loc_tree.insert(parent, 'end', text=p, open=False)
+            if is_dir:
+                self.process_loc_dir(oid, abspath)
+
+    def parent_path(self, item, path=''):
+        '''
+        Get parent path recursivly.
+        Key ref: https://stackoverflow.com/questions/43681006/python-tkinter-treeview-get-return-parent-name-of-selected-item
+
+        :param item: base item
+        :param path: not required when first pass
+        :return: parent path of the current item
+        '''
+
+        parent_iid = self.ex_loc_tree.parent(item)
+        if parent_iid == '':
+            return path
+        else:
+            parent_folder = self.ex_loc_tree.item(parent_iid)['text']
+            path = parent_folder + '/' + path
+            return self.parent_path(parent_iid, path)
+
+    def upload_folder(self, folder_path, s3_sel_path):
+        os.system('bash s3_utils/upload_folder.sh {} {} {}'.format(
+            folder_path, self.drp_sel, s3_sel_path)
+        )
+
+    def process_s3_dir(self, par_treeview_node, par_treedir_node):
+        '''
+        Process s3 dir iteratively and build treeview structure.
+        :param parent: parent node(TreeView object), used to insert treeview node
+        :param s3_node: parent node(DirTree object), used to get children nodes.
+        '''
+        children = par_treedir_node.children
+        for p in children:
+            is_dir = is_s3_dir(p)
+            if is_dir:
+                ####################    Key Error! Comment parent node modified in loop!       ###############
+                #par_treeview_node = self.ex_s3_tree.insert(par_treeview_node, 'end', text=p.node, open=False)
+
+                par_treeview_node_1 = self.ex_s3_tree.insert(par_treeview_node, 'end', text=p.node, open=False)
+                self.process_s3_dir(par_treeview_node_1, p)
+            else:
+                self.ex_s3_tree.insert(par_treeview_node, 'end', text=p.node, open=False)
+
+    def build_s3_tree(self):
+        self.s3_file_list = self.get_bucket_contents()
+        s3_file_list = [join(self.drp_sel, x) for x in self.s3_file_list]
+        self.s3_file_tree = DirTree(s3_file_list)
+        self.s3_file_tree.build()
+
+        root_folder = self.s3_file_tree.node
+        par_treedir_node = self.s3_file_tree.root
+        par_treeview_node = self.ex_s3_tree.insert('', 'end', text=root_folder, open=False)
+        self.process_s3_dir(par_treeview_node, par_treedir_node)
+
+
 
 
 if __name__ == "__main__":
