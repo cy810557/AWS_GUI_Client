@@ -487,14 +487,20 @@ class S3Zilla:
     def quit(self):
         exit()
 
-    def get_local_sel(self):
-        items = self.ex_loc_tree.selection()
-        parents = [self.parent_path(item) for item in items]
-        item_text = [self.ex_loc_tree.item(i)['text'] for i in items]
+    # def get_local_sel(self):
+    #     items = self.ex_loc_tree.selection()
+    #     parents = [self.parent_path(item) for item in items]
+    #     item_text = [self.ex_loc_tree.item(i)['text'] for i in items]
+    #     return [join(p, i) for p, i in zip(parents, item_text)]
+
+    def get_tree_sel(self, tv_obj):
+        items = tv_obj.selection()
+        parents = [self.parent_path(tv_obj, item) for item in items]
+        item_text = [tv_obj.item(i)['text'] for i in items]
         return [join(p, i) for p, i in zip(parents, item_text)]
 
-    def get_s3_sel(self):
-        return [self.ex_s3.get(i) for i in self.ex_s3.curselection()]
+    # def get_s3_sel(self):
+    #     return [self.ex_s3.get(i) for i in self.ex_s3.curselection()]
 
     def set_drop_val(self, selection):
         self.drp_sel = selection
@@ -609,24 +615,25 @@ class S3Zilla:
         if not self.drp_sel or not self.dir:
             m = "Ensure a local path and S3 bucket are selected"
             self.set_status_label(m)
-        elif not self.get_local_sel():
+        #elif not self.get_local_sel():
+        elif not self.get_tree_sel(self.ex_loc_tree):
             m = "Ensure files are selected to upload"
             self.set_status_label(m)
         else:
-            s3_sel_path = self.get_s3_sel()[0]
+            #s3_sel_path = self.get_s3_sel()[0]
+            s3_sel_path = self.get_tree_sel(self.ex_s3_tree)[0]
             # if not isdir(s3_sel_path):
             #     m = "Ensure target path is a directory"
             #     self.set_status_label(m)
-            for selection in self.get_local_sel():
+            for selection in self.get_tree_sel(self.ex_loc_tree):
                 file_ = os.path.split(os.path.abspath(self.dir))[0]
                 file_ = join(file_, selection)
                 if not isdir(file_):
-                    self.s3c.upload_file(file_, self.drp_sel, join(s3_sel_path, basename(file_)))
+                    s3_sel_path_ = s3_sel_path[len(self.drp_sel)+1:]
+                    self.s3c.upload_file(file_, self.drp_sel, join(s3_sel_path_, basename(file_)))
                 else:
-                    # zipd = make_archive(file_, 'zip', self.dir, selection)
-                    # self.s3c.upload_file(zipd, self.drp_sel, basename(zipd))
-                    # remove(zipd)
-                    self.upload_folder(file_, s3_sel_path)
+                    s3_target = 's3://' + join(s3_sel_path, basename(file_))
+                    self.upload_folder(file_, s3_target)
                 m = "Uploaded: %s" % selection
                 self.set_status_label(m)
                 self.status_label.update_idletasks()
@@ -705,11 +712,14 @@ class S3Zilla:
 
             self.refresh_s3()
 
-    def treeviewClick(self, event, treeView=None):
-        for item in self.ex_loc_tree.selection():
-            item_path = self.ex_loc_tree.item(item)['text']
-            parent_path = self.parent_path(item)  # 输出所选行的第一列的值
-            print(join(parent_path, item_path))
+    def treeviewClick(self, event, tv_obj=None, s3=False):
+        for item in tv_obj.selection():
+            item_path = tv_obj.item(item)['text']
+            parent_path = self.parent_path(tv_obj, item)  # 输出所选行的第一列的值
+            if s3:
+                print('s3://' + join(parent_path, item_path))
+            else:
+                print(join(parent_path, item_path))
 
     def init_local_tree(self):
         self.ex_loc_tree = Treeview(self.master)
@@ -723,7 +733,9 @@ class S3Zilla:
         # )
         n1 = "%s files found" % str(self.ex_loc_tree.size())
         self.set_found_local_label(n1)
-        self.ex_loc_tree.bind("<ButtonRelease-1>", self.treeviewClick)
+        self.ex_loc_tree.bind("<ButtonRelease-1>",
+                              lambda event, tv_obj=self.ex_loc_tree:
+                                self.treeviewClick(event, tv_obj))
         folder_name = basename(self.dir)
         self.ex_loc_tree.heading('#0', text=basename(folder_name), anchor='w')
 
@@ -753,7 +765,9 @@ class S3Zilla:
             padx=100
         )
         self.set_found_s3_label(n1)
-        #self.ex_s3_tree.bind("<ButtonRelease-1>", self.treeviewClick)
+        self.ex_s3_tree.bind("<ButtonRelease-1>",
+                             lambda event, tv_obj=self.ex_s3_tree, s3=True:
+                                self.treeviewClick(event, tv_obj, s3))
 
         self.build_s3_tree()
 
@@ -775,7 +789,7 @@ class S3Zilla:
             if is_dir:
                 self.process_loc_dir(oid, abspath)
 
-    def parent_path(self, item, path=''):
+    def parent_path(self, tv_obj, item, path=''):
         '''
         Get parent path recursivly.
         Key ref: https://stackoverflow.com/questions/43681006/python-tkinter-treeview-get-return-parent-name-of-selected-item
@@ -785,18 +799,24 @@ class S3Zilla:
         :return: parent path of the current item
         '''
 
-        parent_iid = self.ex_loc_tree.parent(item)
+        parent_iid = tv_obj.parent(item)
         if parent_iid == '':
             return path
         else:
-            parent_folder = self.ex_loc_tree.item(parent_iid)['text']
+            parent_folder = tv_obj.item(parent_iid)['text']
             path = parent_folder + '/' + path
-            return self.parent_path(parent_iid, path)
+            return self.parent_path(tv_obj, parent_iid, path)
 
     def upload_folder(self, folder_path, s3_sel_path):
-        os.system('bash s3_utils/upload_folder.sh {} {} {}'.format(
-            folder_path, self.drp_sel, s3_sel_path)
+        # os.system('bash s3_utils/upload_folder.sh {} {} {}'.format(
+        #     folder_path, self.drp_sel, s3_sel_path)
+        # )
+        cmd = 'aws --endpoint-url={} s3 --profile test cp {} {} --recursive'.format(
+            self.endpoint_url,
+            folder_path,
+            s3_sel_path
         )
+        os.system(cmd)
 
     def process_s3_dir(self, par_treeview_node, par_treedir_node):
         '''

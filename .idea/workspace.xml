@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="14a582ae-d7d4-4f72-86a2-e515c226cfbb" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/s3_utils/simple_tree.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/s3_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/s3_client.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tkinter_demo_tree.py" beforeDir="false" afterPath="$PROJECT_DIR$/tkinter_demo_tree.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -21,8 +18,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/s3_client.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="163">
-              <caret line="708" column="47" lean-forward="true" selection-start-line="708" selection-start-column="47" selection-end-line="708" selection-end-column="47" />
+            <state relative-caret-position="335">
+              <caret line="541" column="39" lean-forward="true" selection-start-line="541" selection-start-column="39" selection-end-line="541" selection-end-column="39" />
               <folding>
                 <element signature="e#20#41#0" expanded="true" />
               </folding>
@@ -33,7 +30,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file:///usr/lib/python3.5/tkinter/__init__.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="188">
+            <state relative-caret-position="212">
               <caret line="1133" selection-start-line="1133" selection-end-line="1133" />
             </state>
           </provider>
@@ -85,10 +82,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>L</find>
-      <find>s3_sel</find>
-      <find>list</find>
-      <find>Browse</find>
       <find>ex_loc</find>
       <find>ex_loc_</find>
       <find>browse</find>
@@ -114,7 +107,11 @@
       <find>self.ex_s3</find>
       <find>init_s3</find>
       <find>dir</find>
+      <find>treeviewClick</find>
       <find>parent_path</find>
+      <find>selection</find>
+      <find>get_local_sel</find>
+      <find>get_s3_sel</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -328,7 +325,7 @@
       <window_info id="Favorites" order="2" sideWeight="0.50155765" side_tool="true" weight="0.17026885" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.23301986" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.2016719" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49973643" weight="0.28108674" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -381,17 +378,17 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/s3_client.py</url>
-          <line>714</line>
+          <line>724</line>
           <option name="timeStamp" value="11" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/s3_client.py</url>
-          <line>553</line>
+          <line>559</line>
           <option name="timeStamp" value="13" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/s3_client.py</url>
-          <line>731</line>
+          <line>743</line>
           <option name="timeStamp" value="14" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -426,44 +423,54 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/s3_client.py</url>
-          <line>587</line>
+          <line>593</line>
           <option name="timeStamp" value="47" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/s3_client.py</url>
-          <line>757</line>
+          <line>771</line>
           <option name="timeStamp" value="49" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/s3_client.py</url>
-          <line>827</line>
+          <line>847</line>
           <option name="timeStamp" value="53" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/s3_client.py</url>
-          <line>806</line>
-          <option name="timeStamp" value="56" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/s3_client.py</url>
-          <line>703</line>
+          <line>710</line>
           <option name="timeStamp" value="57" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/s3_client.py</url>
-          <line>562</line>
+          <line>568</line>
           <option name="timeStamp" value="58" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/s3_client.py</url>
-          <line>819</line>
+          <line>839</line>
           <option name="timeStamp" value="59" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/s3_client.py</url>
+          <line>614</line>
+          <option name="timeStamp" value="62" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/s3_client.py</url>
+          <line>632</line>
+          <option name="timeStamp" value="63" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="evaluateExpression">
+      <expression>
+        <expression-string>self.s3c.upload_file(file_, self.drp_sel, s3_target)</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>EXPRESSION</evaluation-mode>
+      </expression>
       <expression>
         <expression-string>join(new_path, '1.txt')</expression-string>
         <language-id>Python</language-id>
@@ -501,11 +508,6 @@
       </expression>
       <expression>
         <expression-string>tree.keys()</expression-string>
-        <language-id>Python</language-id>
-        <evaluation-mode>EXPRESSION</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>tree.insert(p, 'end', text=path[i+1], open=False)</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>EXPRESSION</evaluation-mode>
       </expression>
@@ -618,13 +620,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file:///usr/lib/python3.5/tkinter/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="188">
-          <caret line="1133" selection-start-line="1133" selection-end-line="1133" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/s3_utils/simple_tree.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="162">
@@ -652,10 +647,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file:///usr/lib/python3.5/tkinter/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="212">
+          <caret line="1133" selection-start-line="1133" selection-end-line="1133" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/s3_client.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="163">
-          <caret line="708" column="47" lean-forward="true" selection-start-line="708" selection-start-column="47" selection-end-line="708" selection-end-column="47" />
+        <state relative-caret-position="335">
+          <caret line="541" column="39" lean-forward="true" selection-start-line="541" selection-start-column="39" selection-end-line="541" selection-end-column="39" />
           <folding>
             <element signature="e#20#41#0" expanded="true" />
           </folding>
